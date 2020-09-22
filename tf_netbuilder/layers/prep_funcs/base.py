@@ -16,7 +16,7 @@ def prepare_cn(in_chs: int, args: map):
 
     new_args = dict(
         name=args["name"],
-        act_func=args.get("activation"),
+        activation=args.get("activation"),
         cn_args=dict(
             filters=args["out_chs"],
             kernel_size=args["kernel_size"],

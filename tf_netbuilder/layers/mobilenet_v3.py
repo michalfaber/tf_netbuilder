@@ -34,7 +34,7 @@ class SqueezeExcite(tf.keras.layers.Layer):
 
 class InvertedResidual(tf.keras.layers.Layer):
 
-    def __init__(self, in_chs, out_chs, kernel_size, strides, exp_ratio, se_factor, act_func, name, kernel_initializer,
+    def __init__(self, in_chs, out_chs, kernel_size, strides, exp_ratio, se_factor, activation, name, kernel_initializer,
                  bias_initializer, divisible_by=8, padding='same'):
         super(InvertedResidual, self).__init__(name=name)
 
@@ -53,7 +53,7 @@ class InvertedResidual(tf.keras.layers.Layer):
             self.expansion_bn = tf.keras.layers.BatchNormalization(
                 axis=-1, momentum=0.99, epsilon=0.001, center=True, scale=True, name="expand/BatchNorm"
             )
-            self.expansion_act = tf.keras.layers.Activation(act_func)
+            self.expansion_act = activation()
             self.has_expansion = True
         else:
             self.has_expansion = False
@@ -68,7 +68,7 @@ class InvertedResidual(tf.keras.layers.Layer):
         self.depthwise_bn = tf.keras.layers.BatchNormalization(
             axis=-1, momentum=0.99, epsilon=0.001, center=True, scale=True, name="depthwise/BatchNorm"
         )
-        self.depthwise_act = tf.keras.layers.Activation(act_func)
+        self.depthwise_act = activation()
 
         # Projection convolution
 

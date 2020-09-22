@@ -8,7 +8,7 @@ def prepare_ir(in_chs: int, args: map):
         strides=args["strides"],
         exp_ratio=args["exp_ratio"],
         se_factor=args.get("se_factor"),
-        act_func=args["activation"],
+        activation=args["activation"],
         kernel_initializer='glorot_uniform',
         bias_initializer='zeros'
     )
