@@ -1,6 +1,7 @@
 import tensorflow as tf
 
-from tf_netbuilder.parser import NetParser, BLOCK_TYPE_OPER, SELECTOR_BLOCK
+from tf_netbuilder import NetBuilderConfig
+from tf_netbuilder.parser import BLOCK_TYPE_OPER, SELECTOR_BLOCK, decode_arch_def, make_block
 from tf_netbuilder.operations import NoOpInput
 from tf_netbuilder.utils import clean_name
 
@@ -34,9 +35,9 @@ class InputItem:
 
 
 class StackModule(tf.keras.layers.Layer):
-    def __init__(self, stack_def: list, inputs_chs: list, parser: NetParser, name: str):
+    def __init__(self, stack_def: list, inputs_chs: list, name: str):
         super(StackModule, self).__init__(name=name)
-        self.parser = parser
+
         self.stack_def = stack_def
         self.in_chs = inputs_chs
 
@@ -50,7 +51,7 @@ class StackModule(tf.keras.layers.Layer):
         return self.in_chs[0]
 
     def parse_stack(self):
-        all_blocks_args = self.parser.decode_arch_def(self.stack_def)  # list of lists - stages contains layers
+        all_blocks_args = decode_arch_def(self.stack_def)  # list of lists - stages contains layers
 
         for block_args in all_blocks_args:
             ei = self.create_execution_item(block_args, self.in_chs)
@@ -77,7 +78,7 @@ class StackModule(tf.keras.layers.Layer):
         if block_type == BLOCK_TYPE_OPER:
             oper_name = block_args['oper_name']
             oper_args = block_args['oper_args']
-            oper_class = self.parser.operations[oper_name]
+            oper_class = NetBuilderConfig.get_operation(oper_name)
             oper = oper_class(oper_args)
 
             input_tensor_chs = []
@@ -99,7 +100,7 @@ class StackModule(tf.keras.layers.Layer):
         else:
             assert len(in_chs) == 1
 
-            block, out_chs = self.parser.make_block(block_args, in_chs[0])
+            block, out_chs = make_block(block_args, in_chs[0])
             ei = ExecutionItem(name, block, out_chs, is_oper=False)
 
             return ei
@@ -134,11 +135,9 @@ class StackModule(tf.keras.layers.Layer):
 
 class NetModule(tf.keras.layers.Layer):
 
-    def __init__(self, net_def: dict, inputs_stack_name: str, output_names: list, in_chs: list, parser: NetParser,
-                 name: str):
+    def __init__(self, net_def: dict, inputs_stack_name: str, output_names: list, in_chs: list, name: str):
         super(NetModule, self).__init__(name=name)
 
-        self.parser = parser
         self.execution_list = []
         self.inputs_stack_name = inputs_stack_name
         self.output_names = output_names
@@ -167,7 +166,7 @@ class NetModule(tf.keras.layers.Layer):
 
                 inputs_chs = self.get_stack_input_channels(inputs_refs)
 
-                sm = StackModule(stack_without_input_stage, inputs_chs, self.parser, clean_name(stack_name))
+                sm = StackModule(stack_without_input_stage, inputs_chs, clean_name(stack_name))
                 out_chs = sm.get_last_channels_num()
 
                 self.__setattr__(clean_name(stack_name), sm)
@@ -217,7 +216,7 @@ class NetModule(tf.keras.layers.Layer):
         input_name = input_name + "#"
 
         if len(oper_name) > 0:
-            input_oper_class = self.parser.input_opers[oper_name]
+            input_oper_class = NetBuilderConfig.get_input_operation(oper_name)
         else:
             input_oper_class = NoOpInput
         oper = input_oper_class()

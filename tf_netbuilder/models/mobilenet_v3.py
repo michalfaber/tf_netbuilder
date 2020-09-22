@@ -1,7 +1,6 @@
 import tensorflow as tf
 
 from tf_netbuilder.builder import NetModule
-from tf_netbuilder.config import parser
 from tf_netbuilder.files import download_checkpoint
 
 
@@ -80,16 +79,14 @@ class MobilenetV3(tf.keras.Model):
 
         self.net = NetModule(self._model_def,
                              self._model_ins,
-                             self._model_outs, in_chs=[in_chs], parser=parser, name=name)
+                             self._model_outs, in_chs=[in_chs], name=name)
 
         self.dropout = tf.keras.layers.Dropout(0.5, noise_shape=None, seed=None)
 
         self.logits_op = tf.keras.layers.Conv2D(
-            num_classes, kernel_size=1, strides=(1, 1), padding='valid', data_format=None,
+            num_classes, kernel_size=1, strides=(1, 1), padding='valid',
             dilation_rate=(1, 1), groups=1, activation=None, use_bias=True,
-            kernel_initializer='glorot_uniform', bias_initializer='zeros',
-            kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
-            kernel_constraint=None, bias_constraint=None, name=name + "/logits/conv2d_1c_1x1"
+            kernel_initializer='glorot_uniform', bias_initializer='zeros', name=name + "/logits/conv2d_1c_1x1"
         )
 
         self.softmax = tf.keras.layers.Softmax()
@@ -111,7 +108,8 @@ class MobilenetV3(tf.keras.Model):
 
 
 def create_mobilenet_v3_224_1x(pretrained=False):
-    #pretrained_url = "https://github.com/michalfaber/tf_netbuilder/releases/download/v1.0/mobilenet_v3_224_1_0.zip"
+    # TODO: replace it ! pretrained_url = "https://github.com/michalfaber/tf_netbuilder/releases/download/v1.0/mobilenet_v3_224_1_0.zip"
+
     pretrained_url = "https://www.dropbox.com/s/gjehgwltk2ab8ib/mobilenet_v3_224_1_0.zip?dl=1"
 
     model = MobilenetV3(in_chs=3, num_classes=1001)
