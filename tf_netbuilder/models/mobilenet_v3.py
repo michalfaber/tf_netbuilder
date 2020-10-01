@@ -8,7 +8,7 @@ class MobilenetV3(tf.keras.Model):
 
     _model_def = {
         'inputs#': [
-            ['img#norm127']
+            ['img#norm1']
         ],
         'backbone#': [
             ['pb:img#'],  # set previous block
@@ -29,7 +29,7 @@ class MobilenetV3(tf.keras.Model):
             ['c5#ir_r3_k5_s2_e6_c160_se4_nhs'],  # hard-swish    -> C5 1/32
             # stage 6, 7x7 in
             ['cn_bn_r1_k1_s1_c960_nhs'],
-            ['r1x1_k7_s1'],
+            ['avgpool_k7_s1'],
             ['cn_r1_k1_s1_c1280_nhs'],
         ]
     }

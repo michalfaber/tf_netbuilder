@@ -38,10 +38,22 @@ def prepare_cn(in_chs: int, args: map):
     return new_args
 
 
-def prepare_r1x1(in_chs: int, args: map):
+def prepare_avgpool(in_chs: int, args: map):
     new_args = dict(
         name=args["name"],
-        kernel_size=args["kernel_size"],
+        padding='valid',
+        pool_size=args["kernel_size"],
+        strides=args["strides"]
+    )    
+
+    return new_args
+
+
+def prepare_maxpool(in_chs: int, args: map):
+    new_args = dict(
+        name=args["name"],
+        pool_size=args["kernel_size"],
         strides=args["strides"]
     )
+
     return new_args

@@ -230,7 +230,9 @@ class NetModule(tf.keras.layers.Layer):
         # prepare inputs
 
         for idx, op in enumerate(self.inputs_ops):
-            ii = op.oper(x[idx])
+            inputs = x if isinstance(x, tf.Tensor) else x[idx]
+
+            ii = op.oper(inputs)
             evaluated_stacks[op.input_name] = ii
 
         # run all the stacks

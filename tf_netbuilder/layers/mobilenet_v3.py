@@ -14,12 +14,12 @@ class SqueezeExcite(tf.keras.layers.Layer):
 
         self.squeeze = tf.keras.layers.Conv2D(
             squeeze_channels, kernel_size=1, strides=(1, 1), padding=padding, data_format=None,
-            dilation_rate=(1, 1), groups=1, activation=act_squeeze_fn, use_bias=True,
+            dilation_rate=(1, 1), activation=act_squeeze_fn, use_bias=True,
             kernel_initializer=kernel_initializer, bias_initializer=bias_initializer, name="Conv"
         )
         self.excite = tf.keras.layers.Conv2D(
             in_chs, kernel_size=1, strides=(1, 1), padding=padding, data_format=None,
-            dilation_rate=(1, 1), groups=1, activation=gate_fn, use_bias=True,
+            dilation_rate=(1, 1), activation=gate_fn, use_bias=True,
             kernel_initializer=kernel_initializer, bias_initializer=bias_initializer, name="Conv_1"
         )
 
@@ -47,7 +47,7 @@ class InvertedResidual(tf.keras.layers.Layer):
         if mids_chs > in_chs:
             self.expansion_conv = tf.keras.layers.Conv2D(
                 mids_chs, kernel_size=1, strides=(1, 1), padding=padding, data_format=None,
-                dilation_rate=(1, 1), groups=1, activation=None, use_bias=False,
+                dilation_rate=(1, 1), activation=None, use_bias=False,
                 kernel_initializer=kernel_initializer, name="expand"
             )
             self.expansion_bn = tf.keras.layers.BatchNormalization(
@@ -74,7 +74,7 @@ class InvertedResidual(tf.keras.layers.Layer):
 
         self.projection_conv = tf.keras.layers.Conv2D(
             out_chs, kernel_size=1, strides=(1, 1), padding=padding, data_format=None,
-            dilation_rate=(1, 1), groups=1, activation=None, use_bias=False,
+            dilation_rate=(1, 1), activation=None, use_bias=False,
             kernel_initializer=kernel_initializer, name="project"
         )
         self.projection_bn = tf.keras.layers.BatchNormalization(

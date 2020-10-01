@@ -55,9 +55,14 @@ class UpscaleX2(MOperation):
         return tf.image.resize(inputs, (w*2, h*2))
 
 
-class Normalization127Input:
+class NormalizationMinus1Plus1Input:
     def __call__(self, x):
         return tf.cast(x, tf.float32) / 128. - 1
+
+
+class NormalizationMinus05Plus05Input:
+    def __call__(self, x):
+        return tf.cast(x, tf.float32) / 256. - 0.5
 
 
 class NoOpInput:
