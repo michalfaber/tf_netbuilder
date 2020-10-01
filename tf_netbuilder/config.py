@@ -18,7 +18,8 @@ NetBuilderConfig.add_parser("e", lambda arg: float(eval(arg)), "exp_ratio")
 NetBuilderConfig.add_parser("se", lambda arg: int(arg), "se_factor")
 NetBuilderConfig.add_parser("k", lambda arg: int(arg), "kernel_size")
 NetBuilderConfig.add_parser("bn", lambda arg: True, "batch_norm")
-NetBuilderConfig.add_parser("r", lambda arg: int(arg), KEY_REPEATS_NUM)  # helper parser
+# below is the internal parser and variable determining how many times a given layer should be repeated
+NetBuilderConfig.add_parser("r", lambda arg: int(arg), KEY_REPEATS_NUM)
 
 # registering blocks types
 

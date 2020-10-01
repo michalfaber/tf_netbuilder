@@ -16,6 +16,11 @@ class MOperation:
         raise NotImplemented()
 
 
+class MInput:
+    def __call__(self, inputs):
+        raise NotImplemented()
+
+
 class ConcatOper(MOperation):
 
     def __init__(self, input_tenors_names):
@@ -55,16 +60,16 @@ class UpscaleX2(MOperation):
         return tf.image.resize(inputs, (w*2, h*2))
 
 
-class NormalizationMinus1Plus1Input:
+class NormalizationMinus1Plus1Input(MInput):
     def __call__(self, x):
         return tf.cast(x, tf.float32) / 128. - 1
 
 
-class NormalizationMinus05Plus05Input:
+class NormalizationMinus05Plus05Input(MInput):
     def __call__(self, x):
         return tf.cast(x, tf.float32) / 256. - 0.5
 
 
-class NoOpInput:
+class NoOpInput(MInput):
     def __call__(self, x):
         return x

@@ -11,7 +11,7 @@ class MobilenetV3(tf.keras.Model):
             ['img#norm1']
         ],
         'backbone#': [
-            ['pb:img#'],  # set previous block
+            ['select:img#'],  # select the input
             ['cn_bn_r1_k3_s2_c16_nhs'],
             # stage 0, 112x112 in
             ['ir_r1_k3_s1_e1_c16_nre'],  # relu
@@ -20,7 +20,7 @@ class MobilenetV3(tf.keras.Model):
             # # stage 2, 56x56 in
             ['c3#ir_r3_k5_s2_e3_c40_se4_nre'],  # relu           -> C3 1/8
             # # stage 3, 28x28 in
-            ['ir_r1_k3_s2_e6_c80_nhs'],  # hard_swish
+            ['ir_r1_k3_s2_e6_c80_nhs'],    # hard_swish
             ['ir_r1_k3_s1_e2.5_c80_nhs'],  # hard_swish
             ['ir_r2_k3_s1_e2.3_c80_nhs'],  # hard_swish
             # stage 4, 14x14in
@@ -39,13 +39,8 @@ class MobilenetV3(tf.keras.Model):
     _model_outs = ['backbone#']
 
     @staticmethod
-    def _global_pool(input_tensor,
-                    use_reduce_mean_for_pooling=False,
-                    pool_op=tf.nn.avg_pool2d):
+    def _global_pool(input_tensor, use_reduce_mean_for_pooling=False, pool_op=tf.nn.avg_pool2d):
         """Applies avg pool to produce 1x1 output.
-
-        NOTE: This function is funcitonally equivalenet to reduce_mean, but it has
-        baked in average pool which has better support across hardware.
 
         Args:
           input_tensor: input tensor
@@ -85,7 +80,7 @@ class MobilenetV3(tf.keras.Model):
 
         self.logits_op = tf.keras.layers.Conv2D(
             num_classes, kernel_size=1, strides=(1, 1), padding='valid',
-            dilation_rate=(1, 1), groups=1, activation=None, use_bias=True,
+            dilation_rate=(1, 1), activation=None, use_bias=True,
             kernel_initializer='glorot_uniform', bias_initializer='zeros', name=name + "/logits/conv2d_1c_1x1"
         )
 

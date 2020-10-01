@@ -1,2 +1,2 @@
-from .base import ConvBnAct, Reduce1x1
+from .base import ConvBnAct
 from .mobilenet_v3 import InvertedResidual

@@ -2,7 +2,7 @@ import tensorflow as tf
 
 from tf_netbuilder import NetBuilderConfig
 from tf_netbuilder.parser import BLOCK_TYPE_OPER, SELECTOR_BLOCK, decode_arch_def, make_block
-from tf_netbuilder.operations import NoOpInput
+from tf_netbuilder.operations import MInput, NoOpInput
 from tf_netbuilder.utils import clean_name
 
 
@@ -13,7 +13,7 @@ class StackInputDescriptor:
 
 
 class ExecutionItem:
-    def __init__(self, block_name, block, out_chs, is_oper):
+    def __init__(self, block_name: str, block: tf.keras.layers.Layer, out_chs: int, is_oper: bool):
         self.block_name = block_name
         self.block = block
         self.out_chs = out_chs
@@ -21,14 +21,14 @@ class ExecutionItem:
 
 
 class StackExecutionItem:
-    def __init__(self, stack_name: str, inputs_refs: str, out_chs: int):
+    def __init__(self, stack_name: str, inputs_refs: list, out_chs: int):
         self.stack_name = stack_name
         self.inputs_refs = inputs_refs
         self.out_chs = out_chs
 
 
 class InputItem:
-    def __init__(self, input_name, oper, channels):
+    def __init__(self, input_name: str, oper: MInput, channels: int):
         self.input_name = input_name
         self.oper = oper
         self.channels = channels
@@ -51,7 +51,7 @@ class StackModule(tf.keras.layers.Layer):
         return self.in_chs[0]
 
     def parse_stack(self):
-        all_blocks_args = decode_arch_def(self.stack_def)  # list of lists - stages contains layers
+        all_blocks_args = decode_arch_def(self.stack_def)
 
         for block_args in all_blocks_args:
             ei = self.create_execution_item(block_args, self.in_chs)
@@ -62,13 +62,13 @@ class StackModule(tf.keras.layers.Layer):
 
             self.execution_list.append(ei)
 
-    def find_exec_item(self, name):
+    def find_exec_item(self, name: str):
         for ei in self.execution_list:
             if ei.block_name == name:
                 return ei
         raise Exception(f'Block {name} not found in execution list. Check if order of blocks is correct.')
 
-    def create_execution_item(self, block_args, in_chs):
+    def create_execution_item(self, block_args: dict, in_chs: list):
         name = block_args.get('name')
 
         block_type = block_args.get('block_type')
@@ -95,7 +95,7 @@ class StackModule(tf.keras.layers.Layer):
 
             return ei
 
-        # module item
+        # layer
 
         else:
             assert len(in_chs) == 1
@@ -105,7 +105,8 @@ class StackModule(tf.keras.layers.Layer):
 
             return ei
 
-    def resolve_reference(self, ref_name: str, evaluated_tensors: dict):
+    @staticmethod
+    def resolve_reference(ref_name: str, evaluated_tensors: dict):
         t = evaluated_tensors.get(ref_name)
         if t is None:
             raise Exception(F'Evaluated tensor {ref_name} not found. Check if order of blocks is correct.')
@@ -160,8 +161,8 @@ class NetModule(tf.keras.layers.Layer):
 
         for stack_name, stack in net_def.items():
             if stack_name not in inputs_stack_name:
-                stack_without_input_stage = stack[1:]   # first item on the list constitute an input stage
-                                                        # and shouldn't be evaluated inside the StackModul
+                stack_without_input_stage = stack[1:]   # the first item on the list is the input stage
+                                                        # and shouldn't be processed inside the StackModule
                 inputs_refs = self.get_stack_inputs_refs(stack[0][0])
 
                 inputs_chs = self.get_stack_input_channels(inputs_refs)
@@ -177,7 +178,8 @@ class NetModule(tf.keras.layers.Layer):
                                        out_chs=out_chs)
                 )
 
-    def get_stack_inputs_refs(self, input_stage_def):
+    @staticmethod
+    def get_stack_inputs_refs(input_stage_def: str):
         parts = input_stage_def.split(":")
         selector_name = parts[0]
         refs = parts[1:]
@@ -188,7 +190,7 @@ class NetModule(tf.keras.layers.Layer):
             raise Exception("Invalid input selector.")
         pass
 
-    def get_stack_input_channels(self, selector):
+    def get_stack_input_channels(self, selector: list):
         channels = []
         for s in selector:
             found = False
@@ -208,7 +210,8 @@ class NetModule(tf.keras.layers.Layer):
 
         return channels
 
-    def get_input_oper(self, inp_block_def: str):
+    @staticmethod
+    def get_input_oper(inp_block_def: str):
         parts = inp_block_def.split('#')
         if len(parts) != 2:
             raise Exception('Invalid definition of stack with inputs.')

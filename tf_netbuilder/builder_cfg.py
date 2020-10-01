@@ -26,8 +26,9 @@ class NetBuilderConfig:
 
     @staticmethod
     def add_parser(code: str, parser: Callable, arg_name: str):
-        # TODO: remove verification if called twice
+        # dont call it twice for a code
         assert NetBuilderConfig.__conf['blocks_parsers'].get(code) is None
+
         NetBuilderConfig.__conf['blocks_parsers'][code] = BlockParserDef(arg_name=arg_name,
                                                                          code=code, func=parser)
         NetBuilderConfig.__conf['sorted_parsers_codes'] = sorted(
@@ -47,11 +48,11 @@ class NetBuilderConfig:
         NetBuilderConfig.__conf['input_opers'][code] = oper
 
     @staticmethod
-    def get_operation(code):
+    def get_operation(code: str):
         return NetBuilderConfig.__conf['operations'][code]
 
     @staticmethod
-    def get_parser(code):
+    def get_parser(code: str):
         return NetBuilderConfig.__conf['blocks_parsers'][code]
 
     @staticmethod
@@ -59,7 +60,7 @@ class NetBuilderConfig:
         return NetBuilderConfig.__conf['input_opers'][code]
 
     @staticmethod
-    def get_block_type(code):
+    def get_block_type(code: str):
         return NetBuilderConfig.__conf['blocks_types'][code]
 
     @staticmethod

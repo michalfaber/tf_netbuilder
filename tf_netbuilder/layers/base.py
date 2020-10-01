@@ -26,16 +26,3 @@ class ConvBnAct(tf.keras.layers.Layer):
             x = self.act(x)
 
         return x
-
-
-class Reduce1x1(tf.keras.layers.Layer):
-
-    def __init__(self, kernel_size, strides, name):
-        super(Reduce1x1, self).__init__(name=name)
-
-        self.avg = tf.keras.layers.AveragePooling2D(
-            pool_size=(kernel_size, kernel_size), strides=strides, padding='valid', data_format=None
-        )
-
-    def call(self, x):
-        return self.avg(x)
