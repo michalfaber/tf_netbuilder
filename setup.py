@@ -9,7 +9,7 @@ setup(
    author_email='michal@worldestimators.com',
    url='https://github.com/michalfaber/tf_netbuilder',
    packages=find_packages(exclude=['examples', 'resources']),
-   install_requires=['tensorflow >= 2.2.1'],
+   install_requires=['tensorflow-gpu >= 2.2.1'],
    python_requires='>=3.6',
    classifiers=[
       # How mature is this project? Common values are

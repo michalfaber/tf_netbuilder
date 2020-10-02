@@ -17,7 +17,7 @@ For example the lists :
 ```
 Why is the first convolution repeated ? There is an argument ‘r2’ in the notation which means that this block should be repeated 2 times.
 
-I came across this notation in an excellent git repo: [rwightman](https://github.com/rwightman/pytorch-image-models) where the author uses this notation to build stacks of layers in some of his models. This is definitely a very concise method. I find it easier to manage experiments by storing model definitions as text files instead of constantly tweaking Python scripts.
+I came across this notation in this impressive git repo: [pytorch-image-models](https://github.com/rwightman/pytorch-image-models) where the author uses this notation to build stacks of layers in some of his models. This is definitely a very concise method. I find it easier to manage experiments by storing model definitions as text files instead of constantly tweaking Python scripts.
 
 My implementation goes a step further and introduces operations like concatenation, multiplications and any custom function which operates on tensors and can be used in the method **def call(self, x)** of custom class derived from **tf.keras.Model**. New block types or operations can be easily registered.
 
@@ -100,7 +100,7 @@ Individual blocks can have custom name for example **c3#ir_r3...** This is usefu
 
 This is an example of a more complex model with concatenation, upsacling and multiple outputs.
 The architecture is described in detail here: [Single-Network Whole-Body Pose Estimation](https://arxiv.org/abs/1909.13423)
-Although the original implementation uses more stages and VGG as a backbone, I have created a smaller version based on Mobilenet and only 3 paf stages and one heatmap stage.
+Although the original implementation uses more stages and VGG as a backbone, I have created a smaller version based on MobilenetV3 and only 3 paf stages and one heatmap stage.
 Here is the [training code](https://github.com/michalfaber/tensorflow_Realtime_Multi-Person_Pose_Estimation)
 
 Definition of architecture
@@ -195,7 +195,7 @@ This model has multiple stacks. How can we distinguish an operation from a layer
     ['cnct:c3#:upscaled_c4#']
 ```
 
-This is a concatenation operation denoted by a code 'cnct:'. It has 2 arguments c3# and  upscaled_c4# which are references to other blocks.
+This is a concatenation operation denoted by a code **cnct:**. It has 2 arguments **c3#** and  **upscaled_c4#** which are references to other blocks.
 
 Take a look at this special construct:
 
@@ -208,7 +208,7 @@ Take a look at this special construct:
         ]
     }
 ```
-Here we select **stage_1#** and **backbone#** as input to the ‘'stage_2#’ stack. The operation in the next line **cnct:** will perform concatenation on the previously selected stacks
+Here we select **stage_1#** and **backbone#** as input to the **stage_2#** stack. The operation in the next line **cnct:** will perform concatenation on the previously selected stacks.
 
 ##  How to add more layers and operations
 
@@ -270,6 +270,7 @@ There is still work going on in this library so I obviously don’t recommend in
     pip install -r requirements.txt
     cd examples
     python eval_mobilenet_v3.py
+    python eval_openpose_singlenet.py
 ```
 
 ##  Full doc
