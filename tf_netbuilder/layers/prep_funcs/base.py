@@ -1,4 +1,5 @@
 
+
 def prepare_hd_args(in_chs: int, args: map):
 
     new_args = dict(
@@ -27,14 +28,29 @@ def prepare_cn_args(in_chs: int, args: map):
         ),
     )
 
-    if args.get("batch_norm"):
+    if args.get("use_batch_norm"):
         bn_args = dict(
             momentum=0.999,
             epsilon=0.001,
             center=True,
             scale=True)
         new_args["bn_args"] = bn_args
+        
+    return new_args
 
+
+def prepare_cn2_args(in_chs: int, args: map):
+
+    new_args = dict(
+        name=args["name"],
+        in_chs=in_chs,
+        out_chs=args["out_chs"],
+        exp_ratio=args["exp_ratio"],
+        se_factor=args.get("se_factor"),
+        activation=args["activation"],
+        kernel_initializer='glorot_uniform',
+        bias_initializer='zeros'
+    )
     return new_args
 
 
