@@ -80,7 +80,7 @@ class OpenPoseSingleNet(tf.keras.Model):
 
 def create_openpose_singlenet(pretrained=False):
 
-    pretrained_url = "https://www.dropbox.com/s/xchy4zau9acl06x/openpose_singlenet_v1.zip?dl=1"
+    pretrained_url = "https://github.com/michalfaber/tf_netbuilder/releases/download/v1.0/openpose_singlenet_v1.zip"
 
     model = OpenPoseSingleNet(in_chs=[3])
 

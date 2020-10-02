@@ -4,7 +4,7 @@ exec(open('tf_netbuilder/version.py').read())
 setup(
    name='tf_netbuilder',
    version='1.0',
-   description='Builder of neural net architectures using string notation for Tensorflow 2.0',
+   description='Library for creating deep learning architectures using string notation for Tensorflow 2.0',
    author='Michal Faber',
    author_email='michal@worldestimators.com',
    url='https://github.com/michalfaber/tf_netbuilder',
