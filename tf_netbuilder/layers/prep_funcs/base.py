@@ -1,5 +1,5 @@
 
-def prepare_hd(in_chs: int, args: map):
+def prepare_hd_args(in_chs: int, args: map):
 
     new_args = dict(
         use_bias=False,
@@ -12,7 +12,7 @@ def prepare_hd(in_chs: int, args: map):
     return new_args
 
 
-def prepare_cn(in_chs: int, args: map):
+def prepare_cn_args(in_chs: int, args: map):
 
     new_args = dict(
         name=args["name"],
@@ -38,7 +38,7 @@ def prepare_cn(in_chs: int, args: map):
     return new_args
 
 
-def prepare_avgpool(in_chs: int, args: map):
+def prepare_avgpool_args(in_chs: int, args: map):
     new_args = dict(
         name=args["name"],
         padding='valid',
@@ -49,7 +49,7 @@ def prepare_avgpool(in_chs: int, args: map):
     return new_args
 
 
-def prepare_maxpool(in_chs: int, args: map):
+def prepare_maxpool_args(in_chs: int, args: map):
     new_args = dict(
         name=args["name"],
         pool_size=args["kernel_size"],

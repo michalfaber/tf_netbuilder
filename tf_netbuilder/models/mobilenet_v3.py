@@ -5,32 +5,24 @@ from tf_netbuilder.files import download_checkpoint
 
 
 class MobilenetV3(tf.keras.Model):
-
     _model_def = {
         'inputs#': [
-            ['img#norm1']
+            ['img#norm1']  # custom name ‘img#’ for input and normalization -1 to 1
         ],
         'backbone#': [
             ['select:img#'],  # select the input
-            ['cn_bn_r1_k3_s2_c16_nhs'],
-            # stage 0, 112x112 in
-            ['ir_r1_k3_s1_e1_c16_nre'],  # relu
-            # stage 1, 112x112 in
-            ['ir_r1_k3_s2_e4_c24_nre', 'ir_r1_k3_s1_e3_c24_nre'],  # relu
-            # # stage 2, 56x56 in
-            ['c3#ir_r3_k5_s2_e3_c40_se4_nre'],  # relu           -> C3 1/8
-            # # stage 3, 28x28 in
-            ['ir_r1_k3_s2_e6_c80_nhs'],    # hard_swish
-            ['ir_r1_k3_s1_e2.5_c80_nhs'],  # hard_swish
-            ['ir_r2_k3_s1_e2.3_c80_nhs'],  # hard_swish
-            # stage 4, 14x14in
-            ['c4#ir_r2_k3_s1_e6_c112_se4_nhs'],  # hard-swish    -> C4 1/16
-            # stage 5, 14x14in / 7x7out
-            ['c5#ir_r3_k5_s2_e6_c160_se4_nhs'],  # hard-swish    -> C5 1/32
-            # stage 6, 7x7 in
-            ['cn_bn_r1_k1_s1_c960_nhs'],
-            ['avgpool_k7_s1'],
-            ['cn_r1_k1_s1_c1280_nhs'],
+            ['cn_bn_r1_k3_s2_c16_nhs'],  # conv2d with batch norm, hard_swish
+            ['ir_r1_k3_s1_e1_c16_nre'],  # inverted residual with expansion 1, relu
+            ['ir_r1_k3_s2_e4_c24_nre', 'ir_r1_k3_s1_e3_c24_nre'],  # inverted residual
+            ['c3#ir_r3_k5_s2_e3_c40_se4_nre'],  # custom name ‘c3#’ for the last repeated layer, size 1/8 of input
+            ['ir_r1_k3_s2_e6_c80_nhs'],  # inverted residual with expansion 6, hard_swish
+            ['ir_r1_k3_s1_e2.5_c80_nhs'],  # inverted residual with expansion 2.5, hard_swish
+            ['ir_r2_k3_s1_e2.3_c80_nhs'],  # inverted residual with expansion 2.3, hard_swish
+            ['c4#ir_r2_k3_s1_e6_c112_se4_nhs'],  # custom name ‘c4#’ for the last repeated layer, size 1/16 of input
+            ['c5#ir_r3_k5_s2_e6_c160_se4_nhs'],  # custom name ‘c5#’ for the last repeated layer, size 1/32 of input
+            ['cn_bn_r1_k1_s1_c960_nhs'],  # conv2d with batch norm, hard_swish,...
+            ['avgpool_k7_s1'],  # average pooling
+            ['cn_r1_k1_s1_c1280_nhs'],  # conv2d with hard_swish
         ]
     }
 
@@ -103,9 +95,8 @@ class MobilenetV3(tf.keras.Model):
 
 
 def create_mobilenet_v3_224_1x(pretrained=False):
-    # TODO: replace it ! pretrained_url = "https://github.com/michalfaber/tf_netbuilder/releases/download/v1.0/mobilenet_v3_224_1_0.zip"
 
-    pretrained_url = "https://www.dropbox.com/s/gjehgwltk2ab8ib/mobilenet_v3_224_1_0.zip?dl=1"
+    pretrained_url = "https://github.com/michalfaber/tf_netbuilder/releases/download/v1.0/mobilenet_v3_224_1_0.zip"
 
     model = MobilenetV3(in_chs=3, num_classes=1001)
 

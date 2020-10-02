@@ -1,2 +1,177 @@
-# tf_netbuilder
-Library for building deep learning architectures from text and generating tensorflow code
+## Introduction
+
+This library allows to build deep learning architectures using string notation where string descriptors are decoded to tensorflow blocks: layers (tf.keras.layers.Conv2D) or operations on tensors (tf.cat). Those strings are grouped in python lists.
+
+For example this lists :
+
+```python
+    ['cn_r2_k3_s1_c64_nre',
+     'cn_r1_k3_s2_c128_nre']
+```
+...is decoded to :
+
+```python
+    tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), stride=1, activation='tf.nn.relu')
+    tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), stride=1, activation='tf.nn.relu')
+    tf.keras.layers.Conv2D(filters=128, kernel_size=(3, 3), stride=2, activation='tf.nn.relu')
+```
+Why is the first convolution repeated ? There is an argument ‘r2’ in the notation which means that this block should be repeated 2 times.
+
+First time I came across this notation in an excellent git repo: [rwightman](https://github.com/rwightman/pytorch-image-models) where the author used this notation to build stacks of layers in some of his models. This is by no means a very concise method. I found it easier to manage experiments by storing model definitions as text files instead of constantly tweaking Python scripts.
+
+My implementation goes a step further and introduces operations like concatenation, multiplications and any custom function which operates on tensors and can be used in the method **def call(self, x)** of custom class inherited from **tf.keras.Model**. New block types or operations can be easily registered.
+
+This allows to build complex architectures with branches, upscaling, concatenating. All with simple text descriptors.
+
+The folder **./tf_netbuilder/models** contains 2 sample models:
+* mobilenet_v3.py
+* openpose_2branches_vgg.py
+
+Test code is in the folder **./examples**.
+
+##  Mobilenet V3
+
+Definition of the architecture :
+
+```python
+   model_def = {
+        'inputs#': [
+            ['img#norm1']      # custom name ‘img#’ for input and normalization -1 to 1  
+        ],
+        'backbone#': [
+            ['select:img#'],          # select the input
+            ['cn_bn_r1_k3_s2_c16_nhs'],    # conv2d with batch norm, hard_swish
+            ['ir_r1_k3_s1_e1_c16_nre'],      # inverted residual with expansion 1, relu
+            ['ir_r1_k3_s2_e4_c24_nre', 'ir_r1_k3_s1_e3_c24_nre'],  # inverted residual
+            ['c3#ir_r3_k5_s2_e3_c40_se4_nre'],    # custom name ‘c3#’ for the last repeated layer, size 1/8 of input
+            ['ir_r1_k3_s2_e6_c80_nhs'],        # inverted residual with expansion 6, hard_swish
+            ['ir_r1_k3_s1_e2.5_c80_nhs'],     # inverted residual with expansion 2.5, hard_swish
+            ['ir_r2_k3_s1_e2.3_c80_nhs'],     # inverted residual with expansion 2.3, hard_swish
+            ['c4#ir_r2_k3_s1_e6_c112_se4_nhs'],  # custom name ‘c4#’ for the last repeated layer, size 1/16 of input
+            ['c5#ir_r3_k5_s2_e6_c160_se4_nhs'],  # custom name ‘c5#’ for the last repeated layer, size 1/32 of input
+            ['cn_bn_r1_k1_s1_c960_nhs'],    # conv2d with batch norm, hard_swish,...
+            ['avgpool_k7_s1'],        # average pooling
+            ['cn_r1_k1_s1_c1280_nhs'],     # conv2d with hard_swish
+        ]
+    }
+
+    model_ins = 'inputs#'
+
+    model_outs = ['backbone#']
+```
+
+Python code:
+
+```python
+    from tf_netbuilder.builder import NetModule
+    ...
+    class MobilenetV3(tf.keras.Model):
+        def __init__(self, num_classes):
+            self.backbone = NetModule(
+                    net_def=model_def,
+                    inputs_stack_name=model_ins,
+                    output_names=model_outs,
+                    in_chs=[3], name=’MobilenetV3’)
+            ...
+    
+        def call(self, inputs):
+            x = self.backbone(inputs)
+            ...
+```
+**NetBuilder** class is the engine of this library. It is nothing else than an implementation of **tf.keras.layers.Layer** so it can be embedded in your existing custom model.
+Parameters:
+* **net_def** - dictionary with definition of architectures
+    * key - stack name (stacks are groups of layers which can be referenced to from other groups)
+    * value - list of lists of blocks (layers, operations)
+* **inputs_stack** - name of a stack containing inputs definition. One stack should be dedicated to inputs.
+* **output_names** - list of names of stacks that we want at the output. This is useful if our model contains multiple branches or generally, we need multiple outputs from the model.
+* **in_chs** - number of channels for each input. Note that this is a list because we can provide multiple inputs.
+* **name** - custom name for the module.
+
+Note:
+
+All labels should end with a character ‘#’. This is an indicator that we are dealing with a label and it is also a separator in a block definition.
+
+The first item in any stack should always be the block **select**. This is a way to set inputs for a stack. It may be input to the model or other stacks (reference by name).
+
+Individual blocks can have custom name for example **c3#ir_r3...** This is useful if we want to use the tensor of that layer in an operation like concatenate, upscale, etc.
+
+## Openpose 2 branches based on VGG19
+
+This is an example of a complex model with two branches, multiple inputs and multiple outputs.
+Here is the [training code](https://github.com/michalfaber/tensorflow_Realtime_Multi-Person_Pose_Estimation)
+
+Definition of architecture
+
+??
+
+Python code
+
+??
+
+##  How to add more layers and operations
+
+Current implementation contains quite a small set of layers and operations. Only those that I needed when implementing pose estimation models. Here is the [repo](https://github.com/michalfaber/tensorflow_Realtime_Multi-Person_Pose_Estimation)
+But I created it having extensibility in mind so take a look at the script **./tf_netbuilder/config.py** :
+
+```python
+    ...
+    # registering parsers for arguments of all blocks
+    
+    NetBuilderConfig.add_parser("n", lambda arg: ACTIVATION_FUNCS[arg], "activation")
+    NetBuilderConfig.add_parser("s", lambda arg: int(arg), "strides")
+    NetBuilderConfig.add_parser("c", lambda arg: int(arg), "out_chs")
+    NetBuilderConfig.add_parser("e", lambda arg: float(eval(arg)), "exp_ratio")
+    NetBuilderConfig.add_parser("se", lambda arg: int(arg), "se_factor")
+    NetBuilderConfig.add_parser("k", lambda arg: int(arg), "kernel_size")
+    NetBuilderConfig.add_parser("bn", lambda arg: True, "batch_norm")
+    # below is the internal parser and variable determining how many times a given layer should be repeated
+    NetBuilderConfig.add_parser("r", lambda arg: int(arg), KEY_REPEATS_NUM)
+    
+    # registering blocks types - layers
+    
+    NetBuilderConfig.add_block_type("ir", InvertedResidual, prepare_ir_args)
+    NetBuilderConfig.add_block_type("cn", ConvBnAct, prepare_cn_args)
+    NetBuilderConfig.add_block_type("hd", tf.keras.layers.Conv2D, prepare_hd_args)
+    NetBuilderConfig.add_block_type("avgpool", tf.keras.layers.AveragePooling2D, prepare_avgpool_args)
+    NetBuilderConfig.add_block_type("maxpool", tf.keras.layers.MaxPooling2D, prepare_maxpool_args)
+    
+    # registering operations
+    
+    NetBuilderConfig.add_operation('cnct', ConcatOper)
+    NetBuilderConfig.add_operation('mul', MulOper)
+    NetBuilderConfig.add_operation('up_x2', UpscaleX2)
+    
+    # registering operations on inputs
+    
+    NetBuilderConfig.add_input_operation('norm1', NormalizationMinus1Plus1Input)
+    NetBuilderConfig.add_input_operation('norm05', NormalizationMinus05Plus05Input)
+    ...
+```
+
+In short:
+* **add_parser** - parser for a single argument. For example k3 should be parsed to {‘kernel_size’: 3}
+* **add_block_type** - here you can assign a layer class to a string code. Plus additional function that prepares a set of arguments (properly named) for a given layer.
+* **add_operation** - code for operation and class implementing that operation.
+* **add_input_operation** - code for special operation on inputs. Usually this is kind of normalization etc.
+
+Adding more layers and operations is easy.
+
+## Try without installing the library
+
+There is still work going on in this library so I obviously don’t recommend installing it system wide. You can try it with just a few simple steps:
+
+```shell script
+    git clone https://github.com/michalfaber/tf_netbuilder
+    cd tf_netbuilder
+    mkdir .venv
+    virtualenv .venv/tf_netbuilder
+    source .venv/tf_netbuilder/bin/activate
+    pip install -r requirements.txt
+    cd examples
+    python eval_mobilenet_v3.py
+```
+
+##  Full doc
+
+...soon

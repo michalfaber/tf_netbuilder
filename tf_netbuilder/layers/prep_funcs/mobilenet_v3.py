@@ -1,5 +1,5 @@
 
-def prepare_ir(in_chs: int, args: map):
+def prepare_ir_args(in_chs: int, args: map):
     new_args = dict(
         name=args["name"],
         in_chs=in_chs,
