@@ -275,4 +275,4 @@ There is still work going on in this library so I obviously don’t recommend in
 
 ##  Full doc
 
-...soon
+In a blog post:  [https://www.worldestimators.com/mobilenet](https://www.worldestimators.com/mobilenet)
